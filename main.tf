@@ -47,3 +47,18 @@ module "networking" {
 
   depends_on = [azurerm_resource_group.hub]
 }
+
+module "identity" {
+  source = "./modules/identity"
+
+  resource_group_name = azurerm_resource_group.security.name
+  location            = var.location
+  project             = var.project
+  environment         = var.environment
+  tenant_id           = var.tenant_id
+  spoke_vnet_id       = module.networking.spoke_vnet_id
+  data_subnet_id      = module.networking.data_subnet_id
+  tags                = var.tags
+
+  depends_on = [module.networking]
+}

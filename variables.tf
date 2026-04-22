@@ -30,3 +30,8 @@ variable "tags" {
   description = "Tags applied to all resources"
   default     = {}
 }
+
+variable "tenant_id" {
+  type        = string
+  description = "Azure AD tenant ID"
+}
