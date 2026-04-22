@@ -62,3 +62,22 @@ module "identity" {
 
   depends_on = [module.networking]
 }
+
+module "compute" {
+  source = "./modules/compute"
+
+  resource_group_name    = azurerm_resource_group.workload.name
+  location               = var.location
+  project                = var.project
+  environment            = var.environment
+  aks_subnet_id          = module.networking.aks_subnet_id
+  app_identity_id        = module.identity.app_identity_id
+  app_identity_client_id = module.identity.app_identity_client_id
+  kubernetes_version     = "1.33.8"
+  system_node_count      = 1
+  user_node_count        = 1
+  node_vm_size           = "Standard_D2as_v7"
+  tags                   = var.tags
+
+  depends_on = [module.networking, module.identity]
+}
