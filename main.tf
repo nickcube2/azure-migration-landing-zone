@@ -81,3 +81,18 @@ module "compute" {
 
   depends_on = [module.networking, module.identity]
 }
+
+module "data" {
+  source = "./modules/data"
+
+  resource_group_name       = azurerm_resource_group.data.name
+  location                  = var.location
+  project                   = var.project
+  environment               = var.environment
+  data_subnet_id            = module.networking.data_subnet_id
+  spoke_vnet_id             = module.networking.spoke_vnet_id
+  app_identity_principal_id = module.identity.app_identity_principal_id
+  tags                      = var.tags
+
+  depends_on = [module.networking, module.identity]
+}

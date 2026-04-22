@@ -35,3 +35,9 @@ variable "tenant_id" {
   type        = string
   description = "Azure AD tenant ID"
 }
+
+variable "sql_admin_password" {
+  type        = string
+  description = "SQL Server admin password"
+  sensitive   = true
+}
