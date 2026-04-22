@@ -33,3 +33,17 @@ resource "azurerm_resource_group" "migration" {
   location = var.location
   tags     = var.tags
 }
+
+module "networking" {
+  source = "./modules/networking"
+
+  resource_group_name = azurerm_resource_group.hub.name
+  location            = var.location
+  project             = var.project
+  environment         = var.environment
+  hub_vnet_cidr       = "10.0.0.0/16"
+  spoke_vnet_cidr     = "10.1.0.0/16"
+  tags                = var.tags
+
+  depends_on = [azurerm_resource_group.hub]
+}
