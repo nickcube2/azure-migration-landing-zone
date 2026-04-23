@@ -1,0 +1,13 @@
+subscription_id = "your-azure-subscription-id"
+tenant_id       = "your-azure-tenant-id"
+location        = "eastus2"
+environment     = "dev"
+project         = "kpmg"
+
+tags = {
+  Environment = "dev"
+  Project     = "kpmg-migration"
+  ManagedBy   = "terraform"
+  Owner       = "your-name"
+  CostCenter  = "lighthouse-demo"
+}

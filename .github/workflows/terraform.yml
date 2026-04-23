@@ -1,0 +1,153 @@
+name: Terraform CI/CD — Azure Migration Landing Zone
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  TF_VERSION: "1.14.9"
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+jobs:
+  # ─────────────────────────────────────────
+  # VALIDATE — runs on every PR
+  # Catches syntax errors before review
+  # ─────────────────────────────────────────
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+        # Fails if code isn't formatted
+        # Enforces consistent style across team
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+        # -backend=false skips remote state
+        # Allows validation without credentials
+
+      - name: Terraform Validate
+        run: terraform validate
+        # Checks syntax and internal consistency
+        # Catches missing variables, wrong types
+
+  # ─────────────────────────────────────────
+  # SECURITY SCAN — Checkov policy-as-code
+  # Blocks misconfigurations before apply
+  # AWS equivalent: cfn-guard or tfsec
+  # ─────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: terraform
+          soft_fail: true
+          # soft_fail: true — reports issues but doesn't block
+          # Set to false in prod to enforce all checks
+          output_format: cli
+        # Checkov checks for:
+        # - Storage accounts without encryption
+        # - NSGs with overly permissive rules
+        # - Key Vault without soft delete
+        # - AKS without RBAC enabled
+        # - Resources without tags
+
+  # ─────────────────────────────────────────
+  # PLAN — runs on PR, posts plan as comment
+  # Client and reviewer see exactly what changes
+  # before anything is applied
+  # ─────────────────────────────────────────
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    needs: [validate, security]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan \
+            -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
+            -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
+            -out=tfplan \
+            -no-color 2>&1 | tee plan_output.txt
+
+      - name: Post Plan to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('plan_output.txt', 'utf8');
+            const truncated = plan.length > 60000
+              ? plan.substring(0, 60000) + '\n... truncated'
+              : plan;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform Plan\n\`\`\`\n${truncated}\n\`\`\``
+            });
+
+  # ─────────────────────────────────────────
+  # APPLY — runs on merge to main only
+  # Manual approval gate recommended in prod
+  # ─────────────────────────────────────────
+  apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: [validate, security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    # environment: production requires manual approval
+    # configured in GitHub repo settings
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: |
+          terraform apply \
+            -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
+            -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
+            -auto-approve
