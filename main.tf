@@ -96,3 +96,16 @@ module "data" {
 
   depends_on = [module.networking, module.identity]
 }
+
+module "migration" {
+  source = "./modules/migration"
+
+  resource_group_name = azurerm_resource_group.migration.name
+  location            = var.location
+  project             = var.project
+  environment         = var.environment
+  migration_subnet_id = module.networking.migration_subnet_id
+  tags                = var.tags
+
+  depends_on = [module.networking]
+}
