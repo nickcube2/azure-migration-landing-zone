@@ -58,6 +58,6 @@ variable "node_vm_size" {
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

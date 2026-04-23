@@ -31,6 +31,6 @@ variable "spoke_vnet_cidr" {
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

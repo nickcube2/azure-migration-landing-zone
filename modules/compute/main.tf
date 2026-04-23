@@ -32,12 +32,12 @@ resource "azurerm_kubernetes_cluster" "main" {
   # Separate from user workloads — system components stay stable
   # even if user workloads are resource-hungry
   default_node_pool {
-    name                = "system"
-    node_count          = var.system_node_count
-    vm_size             = var.node_vm_size
-    vnet_subnet_id      = var.aks_subnet_id
-    type                = "VirtualMachineScaleSets"
-    os_disk_size_gb     = 30
+    name            = "system"
+    node_count      = var.system_node_count
+    vm_size         = var.node_vm_size
+    vnet_subnet_id  = var.aks_subnet_id
+    type            = "VirtualMachineScaleSets"
+    os_disk_size_gb = 30
 
     # Only run system pods on this pool
     only_critical_addons_enabled = true
@@ -86,7 +86,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   # ── SECURITY ──────────────────────────────
   # Disable local accounts — force Azure AD authentication
   # No static kubeconfig passwords
-  local_account_disabled = false  # true in prod
+  local_account_disabled = false # true in prod
 
   # Auto-upgrade channel — patch versions applied automatically
   automatic_channel_upgrade = "patch"

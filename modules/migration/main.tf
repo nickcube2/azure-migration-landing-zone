@@ -59,7 +59,7 @@ resource "azurerm_recovery_services_vault" "main" {
 
   # Immutability — prevents backup tampering
   # Critical for compliance in regulated industries
-  immutability = "Disabled"  # Enable in prod
+  immutability = "Disabled" # Enable in prod
 
   tags = var.tags
 }

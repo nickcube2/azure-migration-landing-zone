@@ -11,7 +11,7 @@ output "cluster_id" {
 output "kube_config" {
   description = "Kubeconfig for connecting to the cluster"
   value       = azurerm_kubernetes_cluster.main.kube_config_raw
-  sensitive   = true  # Marked sensitive — won't print in plan output
+  sensitive   = true # Marked sensitive — won't print in plan output
 }
 
 output "oidc_issuer_url" {

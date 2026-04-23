@@ -1,32 +1,32 @@
 variable "resource_group_name" {
-  type        = string
+  type = string
 }
 
 variable "location" {
-  type        = string
+  type = string
 }
 
 variable "project" {
-  type        = string
+  type = string
 }
 
 variable "environment" {
-  type        = string
+  type = string
 }
 
 variable "data_subnet_id" {
-  type        = string
+  type = string
 }
 
 variable "spoke_vnet_id" {
-  type        = string
+  type = string
 }
 
 variable "app_identity_principal_id" {
-  type        = string
+  type = string
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

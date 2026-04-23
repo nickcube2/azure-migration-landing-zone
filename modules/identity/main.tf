@@ -36,7 +36,7 @@ resource "azurerm_key_vault" "main" {
   # Soft delete — deleted secrets recoverable for 7 days
   # Protects against accidental deletion
   soft_delete_retention_days = 7
-  purge_protection_enabled   = false  # false for dev — true in prod
+  purge_protection_enabled   = false # false for dev — true in prod
 
   # Disable public network access
   # Only accessible via private endpoint from within the VNet
