@@ -121,33 +121,31 @@ jobs:
               body: `## Terraform Plan\n\`\`\`\n${truncated}\n\`\`\``
             });
 
-  # ─────────────────────────────────────────
-  # APPLY — runs on merge to main only
-  # Manual approval gate recommended in prod
-  # ─────────────────────────────────────────
-  apply:
-    name: Terraform Apply
-    runs-on: ubuntu-latest
-    needs: [validate, security]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
-    # environment: production requires manual approval
-    # configured in GitHub repo settings
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Apply
-        run: |
-          terraform apply \
-            -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
-            -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
-            -auto-approve
+# ─────────────────────────────────────────
+# APPLY — disabled for demo environment
+# In production: uncomment and configure
+# ARM_CLIENT_ID, ARM_CLIENT_SECRET,
+# ARM_SUBSCRIPTION_ID, ARM_TENANT_ID
+# as GitHub repository secrets
+# ─────────────────────────────────────────
+# apply:
+#   name: Terraform Apply
+#   runs-on: ubuntu-latest
+#   needs: [validate, security]
+#   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#   environment: production
+#   steps:
+#     - name: Checkout
+#       uses: actions/checkout@v4
+#     - name: Setup Terraform
+#       uses: hashicorp/setup-terraform@v3
+#       with:
+#         terraform_version: ${{ env.TF_VERSION }}
+#     - name: Terraform Init
+#       run: terraform init
+#     - name: Terraform Apply
+#       run: |
+#         terraform apply \
+#           -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
+#           -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
+#           -auto-approve
